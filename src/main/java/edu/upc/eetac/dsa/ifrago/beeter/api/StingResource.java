@@ -31,9 +31,9 @@ import javax.ws.rs.core.SecurityContext;
 import edu.upc.eetac.dsa.ifrago.beeter.api.model.Sting;
 import edu.upc.eetac.dsa.ifrago.beeter.api.model.StingCollection;
 
+//Todo lo que venga a la URL relativa "/sting" se come este Clase
+//(StingResource)
 @Path("/stings")
-// Todo lo que venga a la URL relativa "/sting" se come este Clase
-// (StingResource)
 public class StingResource {
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 	@Context
@@ -56,39 +56,13 @@ public class StingResource {
 		PreparedStatement stmt = null;
 		try {
 			boolean updateFromLast = after > 0;
-			stmt = conn.prepareStatement(buildGetStingsQuery(updateFromLast));// Para
-																				// preparar
-																				// la
-																				// query
-																				// con
-																				// el
-																				// metodo
-																				// buildGetStingsQuery
-																				// (
-																				// metodo
-																				// de
-																				// abajo
-																				// )
+			stmt = conn.prepareStatement(buildGetStingsQuery(updateFromLast));// Para preparar la query con el metodo buildGetStingsQuery ( metodo de abajo )
 			if (updateFromLast) {
-				stmt.setTimestamp(1, new Timestamp(after));// Construimos la
-															// query, valor 1=
-															// prmer
-															// interrogante-> el
-															// valor de este
-															// será el segundo
-															// argumento pasado
+				stmt.setTimestamp(1, new Timestamp(after));// Construimos la query, valor 1= prmer interrogante-> el valor de este será el segundo argumento pasado
 			} else {
 				if (before > 0)
-					stmt.setTimestamp(1, new Timestamp(before));// Construimos
-																// la query,
-																// valor 1=
-																// prmer
-																// interrogante->
-																// el valor de
-																// este será el
-																// segundo
-																// argumento
-																// pasado
+					stmt.setTimestamp(1, new Timestamp(before));// Construimos/ la query, valor 1= prmer interrogante-> el valor de este será el segundo
+																// argumento pasado
 				else
 					stmt.setTimestamp(1, null);// Construimos la query, no
 												// ponemos nada en el ?. Nota:
@@ -172,7 +146,6 @@ public class StingResource {
 
 	@POST
 	@Consumes(MediaType.BEETER_API_STING)
-	// necesita que lo que se le envie esté en el formato BEETER_API_STING
 	@Produces(MediaType.BEETER_API_STING)
 	public Sting createSting(Sting sting) {
 
@@ -197,6 +170,7 @@ public class StingResource {
 																				// Key
 
 			// stmt.setString(1, sting.getUsername());
+			String tmp = security.getUserPrincipal().getName();
 			stmt.setString(1, security.getUserPrincipal().getName());
 			stmt.setString(2, sting.getSubject());
 			stmt.setString(3, sting.getContent());
@@ -241,14 +215,7 @@ public class StingResource {
 
 	private String buildInsertSting() {
 		return "insert into stings (username, subject, content) value (?, ?, ?)";// Query,
-																					// acordarse
-																					// que
-																					// la
-																					// id
-																					// y
-																					// lastmodified
-																					// se
-																					// autogeneran
+																				// autogeneran
 	}
 
 	private void validateUser(String stingid) {
@@ -260,7 +227,6 @@ public class StingResource {
 	}
 
 	@DELETE
-	// Es muy parecido al GET, los diferencio por el metodo (este es DELETE)
 	@Path("/{stingid}")
 	public void deleteSting(@PathParam("stingid") String stingid) {// Este
 																	// metodo no
@@ -405,11 +371,8 @@ public class StingResource {
 	}
 
 	@GET
-	// Metodo que utilizamos
 	@Path("/search")
-	// Path del subrecurso
 	@Produces(MediaType.BEETER_API_STING_COLLECTION)
-	// MediaType que utilizaremos
 	public StingCollection searchByContentSubject(
 			@QueryParam("subject") String subject, // Este metodo devuelve un
 													// StingCollection
@@ -427,7 +390,7 @@ public class StingResource {
 		try {
 			conn = ds.getConnection();// Conectamos con la base de datos
 		} catch (SQLException e) {
-			throw new ServerErrorException("Could not connect to the database",
+			throw new ServerErrorException("Could not connect to the d ( linea 413 )atabase",
 					Response.Status.SERVICE_UNAVAILABLE);
 		}
 
@@ -439,40 +402,36 @@ public class StingResource {
 			stmt = conn.prepareStatement(buildSearchByContentSubject(subject, content));
 			if (length != 0) {
 				if (subject != null && content != null) {
-					System.out.println("Estamos en Sub!=null, Cont!= null, length!=0");
-					String subsend="'%"+subject+"%'";
-					String contsend="'%"+content+"%'";
-					stmt.setString(1, subsend);
-					stmt.setString(2, contsend);
+					stmt.setString(1,"%"+subject+"%");
+					stmt.setString(2, "%"+content+"%");
 					stmt.setInt(3, length);// Limitamos el numero de resultados,
 											// es el parametro 3
-					System.out.println("'%"+subject+"%'"+ " "+"'%"+content+"%'"+" "+length);
 				} else if (subject == null && content != null) {
 					System.out.println("Estamos en Sub=null, Cont!= null, length!=0");
-					stmt.setString(1, "'%"+content+"%'");
+					stmt.setString(1, "%"+content+"%");
 					stmt.setInt(2, length);// Limitamos el numero de resultados,
 											// es el parametro 2
 				} else if (subject != null && content == null) {
 					System.out.println("Estamos en Sub=null, Cont= null, length!=0");
-					stmt.setString(1, "'%"+subject+"%'");
+					stmt.setString(1, "%"+subject+"%");
 					stmt.setInt(2, length);// Limitamos el numero de resultados,
 											// es el parametro 2
 				}
 			} else if (length==0) {
 				if (subject != null && content != null) {
 					System.out.println("Estamos en Sub!=null, Cont!= null, length=0-> 5");
-					stmt.setString(1, "'%"+subject+"%'");
-					stmt.setString(2, "'%"+content+"%'");
+					stmt.setString(1, "%"+subject+"%");
+					stmt.setString(2, "%"+content+"%");
 					stmt.setInt(3, 5);// Limitamos el numero de resultados a 5,
 										// es el parametro 3
 				} else if (subject == null && content != null) {
 					System.out.println("Estamos en Sub=null, Cont!= null, length=0-> 5");
-					stmt.setString(1, "'%"+content+"%'");
+					stmt.setString(1, "%"+content+"%");
 					stmt.setInt(2, 5);// Limitamos el numero de resultados,
 											// es el parametro 2
 				} else if (subject != null && content == null) {
 					System.out.println("Estamos en Sub!=null, Cont= null, length=0-> 5");
-					stmt.setString(1, "'%"+subject+"%'");
+					stmt.setString(1, "%"+subject+"%");
 					stmt.setInt(2, 5);// Limitamos el numero de resultados,
 											// es el parametro 2
 				}
