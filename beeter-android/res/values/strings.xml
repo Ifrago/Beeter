@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+ 
+    <string name="app_name">Beeter</string>
+    <string name="l_subject">Subject</string>
+    <string name="l_content">Content</string>
+    <string name="lb_cancel">Cancel</string>
+    <string name="lb_send">Send</string>
+    <string name="l_post">Post</string>
+    
+    <string name="login_l_username">Username</string>
+	<string name="login_l_password">Password</string>
+	<string name="login_l_signin">Sign in</string>
+	<string name="login_l_register">Register in Beeter</string>
+ 
+</resources>
